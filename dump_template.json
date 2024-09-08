@@ -1,0 +1,7 @@
+{
+    "process": "extract_video",
+    "source_folder": "DCIM/VIDEO",
+    "order": "name",
+    "checkpoint": "VIDEO420.AVI",
+    "self_checkpoint_reset": true
+}
