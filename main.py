@@ -3,11 +3,9 @@ import json
 from pathlib import Path
 from time import sleep
 
-from process_base import ProcessBase
-from simple_copy import SimpleCopy
-
-
-config_path = Path(__file__).parent / "config.json"
+from processes.process_base import ProcessBase
+from processes.simple_copy import SimpleCopy
+import argparse
 
 
 class MediaDumper:
@@ -15,7 +13,8 @@ class MediaDumper:
     This class is overall way to dump files from external media devices as SD cards, USB sticks, etc.
     """
 
-    def __init__(self):
+    def __init__(self, config_path=Path(__file__).parent / "config.json"):
+        self.config_path = config_path
         self.config = self.load_config()
         self.script_registry: dict[ProcessBase] = {
             "SimpleCopy": SimpleCopy,
@@ -25,7 +24,7 @@ class MediaDumper:
         """
         Load the configuration file.
         """
-        with open(config_path, "r") as f:
+        with open(self.config_path, "r") as f:
             return json.load(f)
 
     def get_devices(self):
@@ -118,7 +117,7 @@ class MediaDumper:
         devices = self.get_devices()
         for device in devices:
             self.process_device(device)
-    
+
     def run_watchdog(self):
         """
         Run the watchdog for the media dumper.
@@ -136,5 +135,18 @@ class MediaDumper:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--watchdog",
+        action="store_true",
+        help="Runs forever and checks for new devices.",
+        default=False,
+    )
+
+    parsed = parser.parse_args()
+
     md = MediaDumper()
-    md.run()
+    if parsed.watchdog:
+        md.run_watchdog()
+    else:
+        md.run()

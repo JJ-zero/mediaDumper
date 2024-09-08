@@ -1,4 +1,4 @@
-from process_base import ProcessBase
+from .process_base import ProcessBase
 from pathlib import Path
 import shutil
 
@@ -32,7 +32,9 @@ class SimpleCopy(ProcessBase):
             for file in source.iterdir()
             if file.is_file()
             and file.name > device_config.get("checkpoint", "")
-            and (not ignore_meta or not file.name.startswith(".")) # This is overcomplicated, rework later
+            and (
+                not ignore_meta or not file.name.startswith(".")
+            )  # This is overcomplicated, rework later
         ]
 
         if not files:
