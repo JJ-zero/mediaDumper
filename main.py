@@ -5,7 +5,9 @@ from time import sleep
 
 from processes.process_base import ProcessBase
 from processes.simple_copy import SimpleCopy
+from helpers.home_assistant import HomeAssistant
 import argparse
+import requests
 
 
 class MediaDumper:
@@ -15,12 +17,16 @@ class MediaDumper:
 
     def __init__(self, config_path=Path(__file__).parent / "config.json"):
         self.config_path = config_path
-        self.config = self.load_config()
+        self.config = self._load_config()
         self.script_registry: dict[ProcessBase] = {
             "SimpleCopy": SimpleCopy,
         }
+        if HomeAssistant.CONFIG_FIELD in self.config:
+            self.home_assistant = HomeAssistant(config=self.config.get(HomeAssistant.CONFIG_FIELD, {}))
+        else:
+            self.home_assistant = None
 
-    def load_config(self):
+    def _load_config(self):
         """
         Load the configuration file.
         """
@@ -46,6 +52,14 @@ class MediaDumper:
             if d["name"] not in self.config.get("ignored", [])
         ]
         return devices
+
+    def _preprocess(self, name: str):
+        if self.home_assistant:
+            self.home_assistant.notify(f"Device connected: {name}")
+    
+    def _postprocess(self, name: str):
+        if self.home_assistant:
+            self.home_assistant.notify(f"Device disconnected: {name}")
 
     def mount_device(self, path, mount_path="sd"):
         """
@@ -102,6 +116,7 @@ class MediaDumper:
         script: ProcessBase = self.script_registry.get(process.get("script"))
 
         try:
+            self._preprocess(process.get("name") or device["name"])
             new_checkpoint = script.run(process, dc, Path("/media/sd"))
             if new_checkpoint:
                 dc["checkpoint"] = new_checkpoint
@@ -109,6 +124,7 @@ class MediaDumper:
                     json.dump(dc, f, indent=4)
         finally:
             self.unmount_device(device["name"])
+            self._postprocess(process.get("name") or device["name"])
 
     def run(self):
         """
