@@ -76,12 +76,13 @@ class MediaDumper:
         # TODO: Add error handling (if device is busy and cannot be unmounted)
         subprocess.run(["pumount", mount_path])
 
-    def load_device_config(self, path: Path):
+    def load_device_config(self, path: Path) -> None | dict:
         """
         Load the configuration for the device.
         """
-        if path / "dump.json":
-            with open(path / "dump.json", "r") as f:
+        config_file = path / "dump.json"
+        if config_file and config_file.exists() and config_file.is_file():
+            with open(config_file, "r") as f:
                 return json.load(f)
 
     def process_device(self, device):
