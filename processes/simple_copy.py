@@ -27,11 +27,20 @@ class SimpleCopy(ProcessBase):
         source_string = device_config.get("source_folder", ".")
         source: Path = device_path / source_string
 
-        files = [
+        found_files = [
             file
             for file in source.iterdir()
             if file.is_file()
-            and file.name > device_config.get("checkpoint", "")
+        ]
+        found_files.sort(key=lambda x: x.name)
+
+        if found_files[-1].name == device_config.get("checkpoint", ""):
+            return found_files[-1].name
+
+        files = [
+            file
+            for file in found_files
+            if file.name > device_config.get("checkpoint", "")
             and (
                 not ignore_meta or not file.name.startswith(".")
             )  # This is overcomplicated, rework later
@@ -42,7 +51,6 @@ class SimpleCopy(ProcessBase):
                 return
             files = [file for file in source.iterdir() if file.is_file()]
 
-        files.sort(key=lambda x: x.name)
         for index, file in enumerate(files):
             print(f"Copying {file.name} [{index}/{len(files)}] to {target}")
             shutil.copy(file, target / file.name)
