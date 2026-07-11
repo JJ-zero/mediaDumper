@@ -3,7 +3,6 @@
     "processes": {
         "extract_video": {
             "enabled": true,
-            "whitelist": null,
             "target": "/user/you/myDrop",
             "script": "SimpleCopy"
         }

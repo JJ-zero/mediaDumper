@@ -118,6 +118,12 @@ class MediaDumper:
         if not process:
             print(f"Process {process_name} not found.")
             return
+        
+        if process.get("enabled", True) is False:
+            print(f"Process {process_name} is disabled.")
+            self.notify(f"Device {device['name']} requires currently disabled process '{process_name}'.")
+            return
+
         script: ProcessBase = self.script_registry.get(process.get("script"))
 
         try:
