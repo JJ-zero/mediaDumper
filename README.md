@@ -39,6 +39,17 @@ For example: `~/Videos/{date}`
 - `order` - Way the files should be ordered and compared to find new files. For now only supports `name`.
 - `self_checkpoint_reset` - Attept to detect if the media device was cleaned and reset the checkpoint if so.
 
+## Notifications
+### Home assistant
+For bigger transfers, it might be useful to get notified when the transfer is finished. You can use Home Assistant for that.
+To enable it, you need to add `home_assistant` field to your `config.json`. If you run script on the sme machine as Home Assistant, you dont need to fill url. For any other machine set the url.
+```json
+"home_assistant": {
+    "url": "http://homeassistant.local:8123",
+    "token": "YOUR_LONG_LIVED_ACCESS_TOKEN"
+}
+```
+
 
 ## Do you want to help?
 This is my personal project and I spend my personal time on it. That means I may not have time to implement everything.
