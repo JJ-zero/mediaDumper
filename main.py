@@ -17,7 +17,7 @@ class MediaDumper:
     def __init__(self, config_path=Path(__file__).parent / "config.json"):
         self.config_path = config_path
         self.config = self._load_config()
-        self.script_registry: dict[ProcessBase] = {
+        self.script_registry: dict[str, type[ProcessBase]] = {
             "SimpleCopy": SimpleCopy,
         }
         if HomeAssistant.CONFIG_FIELD in self.config:
@@ -59,11 +59,14 @@ class MediaDumper:
         except Exception as e:
             print(f"Failed to send notification: {e}")
 
-    def _preprocess(self, name: str):
-        self.notify(f"Device connected: {name}")
+    # Pre and Post Processing hooks are here for now mostly as a placeholders. They will get new arguments in the
+    # future to allow for more complex processing. More changes will be needed for valid pre and post processing hooks.
+
+    def _preprocess(self):
+        pass
     
-    def _postprocess(self, name: str):
-        self.notify(f"Device disconnected: {name}")
+    def _postprocess(self):
+        pass
 
     def mount_device(self, path, mount_path="sd"):
         """
@@ -118,24 +121,34 @@ class MediaDumper:
         if not process:
             print(f"Process {process_name} not found.")
             return
-        
+
+        if dc.get("name"):
+            device["name"] = dc.get("name")
+
         if process.get("enabled", True) is False:
             print(f"Process {process_name} is disabled.")
             self.notify(f"Device {device['name']} requires currently disabled process '{process_name}'.")
             return
 
-        script: ProcessBase = self.script_registry.get(process.get("script"))
+        script: type[ProcessBase] | None = self.script_registry.get(process.get("script"))
 
+        if script is None:
+            print(f"Script {process.get('script')} not found.")
+            self.notify(f"Device {device['name']} requires unknown script '{process.get('script')}'.")
+            return
+
+        self.notify(f"Device connected: {device['name']}")
         try:
-            self._preprocess(process.get("name") or device["name"])
+            self._preprocess()
             new_checkpoint = script.run(process, dc, Path("/media/sd"))
             if new_checkpoint:
                 dc["checkpoint"] = new_checkpoint
                 with open(Path("/media/sd") / "dump.json", "w") as f:
                     json.dump(dc, f, indent=4)
         finally:
+            self._postprocess()
             self.unmount_device(device["name"])
-            self._postprocess(process.get("name") or device["name"])
+            self.notify(f"Device disconnected: {device['name']}")
 
     def run(self):
         """
