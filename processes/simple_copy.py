@@ -34,7 +34,7 @@ class SimpleCopy(ProcessBase):
         ]
         found_files.sort(key=lambda x: x.name)
 
-        if found_files[-1].name == device_config.get("checkpoint", ""):
+        if found_files and found_files[-1].name == device_config.get("checkpoint", ""):
             return found_files[-1].name
 
         files = [

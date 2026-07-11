@@ -7,7 +7,6 @@ from processes.process_base import ProcessBase
 from processes.simple_copy import SimpleCopy
 from helpers.home_assistant import HomeAssistant
 import argparse
-import requests
 
 
 class MediaDumper:
@@ -53,13 +52,18 @@ class MediaDumper:
         ]
         return devices
 
+    def notify(self, message):
+        try:
+            if self.home_assistant:
+                self.home_assistant.notify(message)
+        except Exception as e:
+            print(f"Failed to send notification: {e}")
+
     def _preprocess(self, name: str):
-        if self.home_assistant:
-            self.home_assistant.notify(f"Device connected: {name}")
+        self.notify(f"Device connected: {name}")
     
     def _postprocess(self, name: str):
-        if self.home_assistant:
-            self.home_assistant.notify(f"Device disconnected: {name}")
+        self.notify(f"Device disconnected: {name}")
 
     def mount_device(self, path, mount_path="sd"):
         """
@@ -143,11 +147,15 @@ class MediaDumper:
         last_run_devices = []
 
         while True:
-            devices = self.get_devices()
-            for device in devices:
-                if device not in last_run_devices:
-                    self.process_device(device)
-            last_run_devices = devices
+            try:
+                devices = self.get_devices()
+                for device in devices:
+                    if device not in last_run_devices:
+                        self.process_device(device)
+                last_run_devices = devices
+            except Exception as e:
+                print(f"Error: {e}")
+                self.notify(f"MediaDumper encountered an error: {str(type(e).__name__)}")
             sleep(60)
 
 

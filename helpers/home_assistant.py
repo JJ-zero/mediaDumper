@@ -15,4 +15,4 @@ class HomeAssistant:
         device = "mobile_app_fusion"
         url = f"{self.url_base}services/notify/{device}"
         data = {"message": message}
-        requests.post(url, headers=self.headers, json=data)
+        requests.post(url, headers=self.headers, json=data, timeout=15)
