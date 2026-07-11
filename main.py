@@ -147,7 +147,7 @@ class MediaDumper:
                     json.dump(dc, f, indent=4)
         finally:
             self._postprocess()
-            self.unmount_device(device["name"])
+            self.unmount_device(device["path"])
             self.notify(f"Device disconnected: {device['name']}")
 
     def run(self):
