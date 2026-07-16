@@ -53,5 +53,9 @@ class SimpleCopy(ProcessBase):
 
         for index, file in enumerate(files):
             print(f"Copying {file.name} [{index}/{len(files)}] to {target}")
+            target_file = target / file.name
+            if target_file.exists():
+                print(f"File {target_file} already exists, skipping.")
+                continue
             shutil.copy(file, target / file.name)
         return files[-1].name

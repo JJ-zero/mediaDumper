@@ -15,7 +15,6 @@ SyslogIdentifier=media-dumper
 
 # Security and resource limits
 PrivateTmp=true
-NoNewPrivileges=true
 # If you want to restrict the service's access to the system, uncomment the following lines.
 # Don't forget that then you may potentially need to duplicate target path configuration between 
 # the service and app configs.

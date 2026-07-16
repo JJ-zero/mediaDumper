@@ -172,17 +172,17 @@ class MediaDumper:
         sleep_time = sleep_time_minimum
 
         while True:
+            devices = self.get_devices()
             try:
-                devices = self.get_devices()
                 for device in devices:
                     if device not in last_run_devices:
                         self.process_device(device)
                         sleep_time = sleep_time_minimum  # Reset sleep time after processing a new device
-                last_run_devices = devices
             except Exception as e:
                 print(f"Error: {e}")
                 self.notify(f"MediaDumper encountered an error: {str(type(e).__name__)}")
             finally:
+                last_run_devices = devices
                 sleep(sleep_time)
                 sleep_time = min(round(sleep_time * 1.4), sleep_time_maximum)  # Exponential backoff up to maximal interval
 
