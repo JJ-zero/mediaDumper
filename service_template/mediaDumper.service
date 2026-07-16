@@ -1,0 +1,29 @@
+[Unit]
+Description=Media Dumper Service
+Documentation=file://{{SCRIPT_DIR}}/README.md
+
+[Service]
+Type=simple
+User={{SERVICE_USER}}
+WorkingDirectory={{SCRIPT_DIR}}
+ExecStart={{PYTHON_EXECUTABLE}} {{SCRIPT_DIR}}/main.py --watchdog
+Restart=on-failure
+RestartSec=10s
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=media-dumper
+
+# Security and resource limits
+PrivateTmp=true
+NoNewPrivileges=true
+# If you want to restrict the service's access to the system, uncomment the following lines.
+# Don't forget that then you may potentially need to duplicate target path configuration between 
+# the service and app configs.
+# ProtectSystem=strict
+# ProtectHome=yes
+# ReadWritePaths={{SCRIPT_DIR}}
+CPUQuota=20%
+MemoryMax=4G
+
+[Install]
+WantedBy=multi-user.target

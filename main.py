@@ -165,17 +165,26 @@ class MediaDumper:
 
         last_run_devices = []
 
+        watchdog_config = self.config.get("watchdog", {})
+        sleep_time_minimum = watchdog_config.get("minimal_interval", 10)
+        sleep_time_maximum = watchdog_config.get("maximal_interval", 300)
+
+        sleep_time = sleep_time_minimum
+
         while True:
             try:
                 devices = self.get_devices()
                 for device in devices:
                     if device not in last_run_devices:
                         self.process_device(device)
+                        sleep_time = sleep_time_minimum  # Reset sleep time after processing a new device
                 last_run_devices = devices
             except Exception as e:
                 print(f"Error: {e}")
                 self.notify(f"MediaDumper encountered an error: {str(type(e).__name__)}")
-            sleep(60)
+            finally:
+                sleep(sleep_time)
+                sleep_time = min(round(sleep_time * 1.4), sleep_time_maximum)  # Exponential backoff up to maximal interval
 
 
 if __name__ == "__main__":
